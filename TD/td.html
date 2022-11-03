@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/2001/REC-xhtml11-20010531/DTD/xhtml11-flat.dtd">
+<!-- <!DOCTYPE XHTML 1.1> -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<title>Tower Defense</title>
+<link href="style.css" media="screen" rel="Stylesheet" type="text/css" />        
+
+</head>
+
+<body>
+<h1> Tower Defense </h1>
+<div align="right"><button onclick="document.location='/api/reg.html'">Регистрация</button></div>
+<div align="right"><button onclick="document.location='/api/auth.html'">Войти</button></div>
+
+<div id="game_over"></div>
+
+<div id="game">
+  <div id="top_controls">
+    <span class='item'> Lives: <span id="lives">20</span></span>
+    <span class='item'> Score: <span id="score">0</span></span>
+    <span class='item'> Gold: <span id="gold">0</span></span>
+    <span class='item'> Wave: <span id="wave">1</span></span>
+    <span class='item'> Creep Variety: <span id="creep_variety"></span></span>
+    <span class='item'> Next Wave in <span id="till_next_wave"></span> seconds</span>
+  </div>
+  <div id="help">
+
+    
+    <div id="help-headers">
+      <span><a class="section active" href="#help-gameplay">Геймплей</a></span>
+      <span><a class="section" href="#help-towers">Башни</a></span>
+      <span><a class="section" href="#help-creeps">Противники</a></span>
+      <span><a class="section" href="#help-terrain">Местность</a></span>
+      <span><a class="section" href="#help-bomb">Бомбы &amp; Яд. Бомбы</a></span>
+    </div>
+    <div id="help-sections">
+    <div class="visible" id="help-gameplay">
+      <p> Защита башни - это стратегическая игра, в которой вы пытаетесь победить волны опасных монстров, прежде чем они доберутся до вашей башни.</p>
+      <p> Монстры появляются на зеленом квадрате в левом краю карты, идут к желтому квадрату на правом краю карты. Каждый раз, когда монстр достигает вашей башни, вы теряете одну жизнь. Потеряйте все свои жизни, и игра закончится. </p>
+      <p> Вы начинаете с небольшим количеством золота на которое можно построить или прокачать башню, золото можно получить убивая монстров. </p>
+    </div>
+    <div id="help-towers">
+      <p> Башни - это ваша первая и последняя линия защиты от противников. За исключением бомбы и ядерной бомбы. </p>
+        <ul>
+          <li><strong class='missile-tower'>Missile Towers</strong> – Медленно стреляющие башни с большой дальностью стрельбы.</li>
+          <li><strong class='cannon-tower'>Cannon Towers</strong> – Пушки стреляющие ядрами по дуге нанося урон по площади.</li>
+          <li><strong class='gatling-tower'>Gatling Towers</strong> – Пулемет с высокой скоростью стрельбы.</li>
+          <li><strong class='laser-tower'>Laser Towers</strong> – Стреляют лазерами с высокой скоростью.</li>
+        </ul>
+      <p> Башни перекрывают путь противникам из-за чего можно строить длинны лабиринты для них. </p>
+    </div>
+    <div id="help-creeps">
+      <p> Противники стараются дойти до твоей базы и сломать ее.</p>
+      <ul>
+        <li><strong class='normal-creep'>Normal</strong> Обычные противники.</li>
+        <li><strong class='quick-creep'>Quick</strong> Быстрые противники появляющиеся каждые 3 волны.</li>
+        <li><strong class='strong-creep'>Strong</strong> Сильные противники которые появляются каждые 5 волн.</li>
+        <li><strong class='boss-creep'>Boss</strong> Босс имеет большой размер и запас здоровья.</li>
+      </ul>
+      <p> Так же у каждого из них может быть 1 доп. способность. Некоторые быстро пересекают воду, некоторые могут летать или быстро проходить горы.</p>
+    </div>
+    <div id="help-terrain">
+      <p> Каждый квадрат на доске представляет собой определенный тип местности. Местность назначается случайным образом каждый раз. </p>
+      <ul>
+        <li> <strong class='neutral-terrain'>Neutral</strong> Самая обычная местность. </li>
+        <li> <strong class='water-terrain'>Water</strong> Вода, замедлят противников.</li>
+        <li> <strong class='mountain-terrain'>Mountain</strong> Горы, замедляет противников и увеличивает радиус атаки башен. </li>
+        <li> <strong class='power-plant-terrain'> Power plant </strong> Усиленная местность ускоряет противников, но также удваивает урон от любой башни.</li>
+      </ul>
+    </div>
+    <div id="help-bomb">
+      <p> The <strong class='bomb'>Bomb</strong> У вас есть неограниченный запас, но с каждым пройденным уровнем они становятся немного дороже. Нанесет серьезный урон всем крипам в радиусе действия (нанося 75% от их максимального количества хитпоинтов). </p>
+      <p> The <strong class='nuke'>Nuke</strong> Уничтожает всех противников на карте, ограниченны запас. </p>
+    </div>
+    </div>
+    
+  </div>
+
+  <div id="middle">
+    <canvas id='tower_defense' width="600" height="400"></canvas>
+
+    <div id="side">
+      <div id="controls">
+        <table>
+          <tr>
+            <td> <button id='laser_button' class='mode_button' onclick="build_laser_tower();" accesskey="L">Build <span class='hotkey'>L</span>aser Tower - 25 Gold</button> </td>
+          </tr>
+          <tr>
+            <td> <button id='gatling_button' class='mode_button' onclick="build_gatling_tower();"> Build <span class='hotkey'>G</span>attling Tower - 50 Gold</button></td>
+          </tr>
+	  <tr>
+            <td> <button id='cannon_button' class='mode_button' onclick="build_cannon_tower();" accesskey="M">Build <span class='hotkey'>C</span>annon Tower - 75 Gold</button> </td>
+          </tr>
+          <tr>
+            <td> <button id='missile_button' class='mode_button' onclick="build_missile_tower();" accesskey="M">Build <span class='hotkey'>M</span>issile Tower - 100 Gold</button> </td>
+          </tr>
+          <tr>  
+            <td> <button id='bomb_button' class='mode_button' onclick="aim_bomb();" accesskey="S">Drop <span class='hotkey'>B</span>omb - <span id="bomb_cost">50</span> Gold</button></td>
+          </tr>
+          <tr>
+            <td> <button onclick="nuke_creeps();" accesskey="N"> Launch <span class='hotkey'>N</span>uke - <span id="nukes_left"> 3 left </span></button></td>
+          </tr>
+        </table>
+      </div>
+
+      <div id="tower">
+        <table>
+          <tr><td></td><td> <em>Tower Details</em> </td></tr>
+          <tr><td> Type: </td><td id="tower_type"></td></tr>
+          <tr><td> Range: </td><td id="tower_range"></td></tr>
+          <tr><td> Damage: </td><td id="tower_damage"></td></tr>
+          <tr><td> Firing Rate: </td><td id="tower_rate"></td></tr>
+          <tr><td><button id="tower_sell_button"></button></td></tr>
+          <tr><td><button id="tower_upgrade_button"><span class='hotkey'>U</span>pgrade!</button></td></tr>
+        </table>  
+      </div>
+      <div id="creep">
+        <table>
+          <tr><td></td><td> <em> Creep Details </em></td></tr>
+          <tr><td> Type: </td><td id="creep_type"></td></tr>
+          <tr><td> Hp: </td><td id="creep_hp"></td></tr>
+          <tr><td> Value: </td><td id="creep_value"></td></tr>
+        </table>
+      </div>
+      <div class='error message_area'></div>
+      <div class='message message_area'></div>
+    </div>
+  </div>
+
+  <div id="bottom_controls">
+    <button id='pause_button' class='mode_button' onclick="pause();">Pause</button>
+    <button id='reset_button' onclick="reset_game();">Reset Game</button>
+    <button onclick="spawn_wave();">Spawn Next <span class='hotkey'>W</span>ave</button>
+<!--     <button id='mute_button' onclick="mute();">Mute</button> -->
+    <button id='help_button' onclick="toggle_help();"><span class='hotkey'>H</span>elp</button>
+    <button id='logging_button' onclick='toggle_logging();' class='active_mode'>Stop <span class='hotkey'>D</span>ebugging</button>
+  </div>
+</div>
+
+<h4>Hotkeys:</h4>
+<ul>
+    <li>[space] – Пауза/Продолжить</li>
+    <li>H – Помощь!</li>
+    <li>L – Построить laser tower</li>
+    <li>M – Построить missile tower</li>
+    <li>G – Построить gatling tower</li>
+    <li>C – Построить cannon tower</li>
+    <li>B – Сбросить Bomb</li>
+    <li>N – Запустить Nuke</li>
+    <li>W – Следующая волна</li>
+    <li>U – Прокачать башню</li>
+</ul>
+
+<div id="js_imports">
+<!-- Putting script elements as late in the document as possible gives
+    a better, faster initial render. -->
+<script src="processing.js" type="text/javascript" charset="utf-8" ></script>
+<script src="jsfprocessing.js" type="text/javascript" charset="utf-8" ></script>
+<script src="jquery-3.6.0.js" type="text/javascript" charset="utf-8" ></script>
+<script src="game/creep_waves.js" type="text/javascript" charset="utf-8" ></script>
+<script src="game/terrain.js" type="text/javascript" charset="utf-8" ></script>
+<script src="game/util.js" type="text/javascript" charset="utf-8" ></script>
+<script src="game/creeps.js" type="text/javascript" charset="utf-8" ></script>
+<script src="game/ui_modes.js" type="text/javascript" charset="utf-8" ></script>
+<script src="game/weapons.js" type="text/javascript" charset="utf-8" ></script>
+<script src="game/td.js" type="text/javascript" charset="utf-8" ></script>
+<script src="jquery.ui-1.5/ui/effects.core.js" type="text/javascript" charset="utf-8"></script>
+<script src="jquery.ui-1.5/ui/effects.highlight.js" type="text/javascript" charset="utf-8"></script>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+    /* initialization */
+    $(document).ready(function() {
+        start_tower_defense();
+    })
+    
+    
+    /* Hotkeys! */
+    special_keys = {
+        9: 'tab', 32:'space', 13: 'return', 8:'backspace', 145: 'scroll', 20: 'capslock', 
+        144: 'numlock', 19:'pause', 45:'insert', 36:'home', 46:'del',35:'end', 33: 'pageup', 16: 'shift', 
+        34:'pagedown', 37:'left', 38:'up', 39:'right',40:'down', 112:'f1',113:'f2', 114:'f3', 
+        115:'f4', 116:'f5', 117:'f6', 118:'f7', 119:'f8', 120:'f9', 121:'f10', 122:'f11', 123:'f12'};
+    
+    /* Modifier keys */
+    var modifierkeys = {};
+    var shift_down = false;
+    
+    //extract hotkeys from the DOM
+    var hotkeys = {};
+    $('button .hotkey').each(function(){
+        //this is bass ackwards, but I got type errors passing around the native click method
+        var button = this.parentNode;
+        hotkeys[$(this).html().toUpperCase()] = function() {button.click()};
+    });
+    
+    //hotkeys that aren't in the dom
+    hotkeys["space"] = pause;
+    hotkeys['Z'] = function() {$('#log').empty()};
+    hotkeys['R'] = function() {if (SET.state.name() == "GameOverMode") reset_game();}
+    
+    //modifiers to be called on keydown and keyup
+    modifierkeys["shift"] = function() { shift_down = !shift_down; };
+    
+    $(document).on("keydown", function(e) {
+        // if the user is holding down ctrl or cmd, let the browser handle it
+        if (e.metaKey) return true;
+        var key = special_keys[e.keyCode] || String.fromCharCode(e.keyCode);
+        if (key in hotkeys){
+            hotkeys[key]();
+            return false;
+        }
+        if (key in modifierkeys){
+            modifierkeys[key]();
+            return false;
+        }
+        return true;
+    });
+    
+    $(document).on("keyup", function(e) {
+        if (e.metaKey) return true;
+        var key = special_keys[e.keyCode] || String.fromCharCode(e.keyCode);
+        if (key in modifierkeys){
+            modifierkeys[key]();
+            return false;
+        }
+        return true;
+    });
+    
+
+    /* Toggle buttons along the bottom */
+
+    // all of this is really a prime candidate for some cleanup
+    // so much dupiclation and so many global variables for such
+    // simple behavior
+
+    var paused = false;
+    function pause() {
+        paused = !paused;
+        pause_resume();
+        $('#pause_button').html(paused ? "Resume" : "Pause");          
+    }
+    function mute() {
+        mute_unmute();
+        $('#mute_button').html(muted ? "Unmute" : "Mute");
+    }
+    var logging = true;
+    var prim_log = log;
+    function toggle_logging() {
+        logging = !logging;
+        
+        if (logging)
+          log = prim_log;
+        else
+          log = function(){};
+        $("#logging_button").toggleClass("active_mode").html(logging? "Stop <span class='hotkey'>D</span>ebugging" : 'Start <span class="hotkey">D</span>ebugging');
+    }
+    
+    if (document.location.hash == "#debug")
+      $('#logging_button').show();
+    else{
+      toggle_logging()
+      $('#logging_button')[0].onclick = function(){};
+    }
+    
+    var getIdFromURL = function(url) {
+      return url.slice(url.indexOf("#"));
+    }
+    $("#help-headers .section").on( 'click',function() {
+      $("#help-sections div").hide();
+      $(getIdFromURL(this.href)).show();
+      $("#help-headers .section").removeClass("active");
+      $(this).addClass("active");
+      return false;
+    })
+
+    var help_displayed = false;
+    var toggle_help = function() {
+      help_displayed = !help_displayed;
+      if (help_displayed){
+        $("#help").show();
+        $("#help_button").addClass("active_mode");
+        if (!paused) pause();
+      }
+      else {
+        $('#help').hide();
+        $('#help_button').removeClass('active_mode');
+        if (paused) pause();
+      }
+    };
+
+
+
+    /* illustrating to the user what mode they're in*/
+    mode_signifiers = {'BuildLaserTowerMode':'laser_button', 'BuildGatlingTowerMode':'gatling_button',
+                       'BuildCannonTowerMode':'cannon_button', 'BuildMissileTowerMode':'missile_button',
+                       'AimBombMode':'bomb_button', 'PauseMode':'pause_button'};
+    for (event in mode_signifiers) {
+        $('').on(event, function(e) {
+            $('#'+mode_signifiers[e.type]).addClass('active_mode');
+        });
+    }
+    $('').on('no_mode', function() {
+        $('.mode_button').removeClass('active_mode');
+    })
+    
+    
+    /* Messages for the player */
+
+    //Temporary messages are a bit of a pain
+    var timeToHide = null;
+    ["error","message"].forEach(function(s){
+        $('.'+s).hide();
+        $('').on(s,function(e,message){
+            timeToHide = new Date().getTime() + 2500;
+            var el = $('.'+s);
+            el.html(message).fadeIn();
+            window.setTimeout(function() {
+                if (new Date().getTime() >= timeToHide)
+                    el.fadeOut();
+            }, 3000);
+        });
+    });
+    $('#game_over').hide();
+    console.log()
+    $('').on('game_over', function(over){
+        if (over == true){
+            log("game over");
+            $('#game_over').html("Game Over! Final score: " + $("#score").html()).fadeIn();
+            //tempt tempt tempt
+            for (var i=0; i < 3; i++)
+              $("#reset_button").effect("highlight",{color:"#f60"},3000); 
+        }
+        else{
+          log("game (re?)started");
+          $('#game_over').html("Just once more...").fadeOut();
+        }
+    });
+</script>
+
+<hr/>
+<div id="log"></div>
+<div id="sfx_dump"></div>
+</body> </html>
